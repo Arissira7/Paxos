@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package paxoskv;
+package paxos;
 
-option go_package = "github.com/openacid/paxoskv";
+option go_package = "/paxos";
 
 // PaxosKV defines the paxos RPC.
 //

@@ -4,15 +4,14 @@
 // 	protoc        v7.35.1
 // source: proto/paxos.proto
 
-package paxoskv
+package paxos
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -314,7 +313,7 @@ var File_proto_paxos_proto protoreflect.FileDescriptor
 
 const file_proto_paxos_proto_rawDesc = "" +
 	"\n" +
-	"\x11proto/paxos.proto\x12\apaxoskv\"9\n" +
+	"\x11proto/paxos.proto\x12\x05paxos\"9\n" +
 	"\tBallotNum\x12\f\n" +
 	"\x01N\x18\x01 \x01(\x03R\x01N\x12\x1e\n" +
 	"\n" +
@@ -324,18 +323,18 @@ const file_proto_paxos_proto_rawDesc = "" +
 	"\x04Vi64\x18\x01 \x01(\x03R\x04Vi64\"5\n" +
 	"\x0fPaxosInstanceId\x12\x10\n" +
 	"\x03Key\x18\x01 \x01(\tR\x03Key\x12\x10\n" +
-	"\x03Ver\x18\x02 \x01(\x03R\x03Ver\"\x82\x01\n" +
-	"\bAcceptor\x12,\n" +
-	"\aLastBal\x18\x01 \x01(\v2\x12.paxoskv.BallotNumR\aLastBal\x12 \n" +
-	"\x03Val\x18\x02 \x01(\v2\x0e.paxoskv.ValueR\x03Val\x12&\n" +
-	"\x04VBal\x18\x03 \x01(\v2\x12.paxoskv.BallotNumR\x04VBal\"|\n" +
-	"\bProposer\x12(\n" +
-	"\x02Id\x18\x01 \x01(\v2\x18.paxoskv.PaxosInstanceIdR\x02Id\x12$\n" +
-	"\x03Bal\x18\x02 \x01(\v2\x12.paxoskv.BallotNumR\x03Bal\x12 \n" +
-	"\x03Val\x18\x03 \x01(\v2\x0e.paxoskv.ValueR\x03Val2n\n" +
-	"\aPaxosKV\x121\n" +
-	"\aPrepare\x12\x11.paxoskv.Proposer\x1a\x11.paxoskv.Acceptor\"\x00\x120\n" +
-	"\x06Accept\x12\x11.paxoskv.Proposer\x1a\x11.paxoskv.Acceptor\"\x00B\x1dZ\x1bgithub.com/openacid/paxoskvb\x06proto3"
+	"\x03Ver\x18\x02 \x01(\x03R\x03Ver\"|\n" +
+	"\bAcceptor\x12*\n" +
+	"\aLastBal\x18\x01 \x01(\v2\x10.paxos.BallotNumR\aLastBal\x12\x1e\n" +
+	"\x03Val\x18\x02 \x01(\v2\f.paxos.ValueR\x03Val\x12$\n" +
+	"\x04VBal\x18\x03 \x01(\v2\x10.paxos.BallotNumR\x04VBal\"v\n" +
+	"\bProposer\x12&\n" +
+	"\x02Id\x18\x01 \x01(\v2\x16.paxos.PaxosInstanceIdR\x02Id\x12\"\n" +
+	"\x03Bal\x18\x02 \x01(\v2\x10.paxos.BallotNumR\x03Bal\x12\x1e\n" +
+	"\x03Val\x18\x03 \x01(\v2\f.paxos.ValueR\x03Val2f\n" +
+	"\aPaxosKV\x12-\n" +
+	"\aPrepare\x12\x0f.paxos.Proposer\x1a\x0f.paxos.Acceptor\"\x00\x12,\n" +
+	"\x06Accept\x12\x0f.paxos.Proposer\x1a\x0f.paxos.Acceptor\"\x00B\bZ\x06/paxosb\x06proto3"
 
 var (
 	file_proto_paxos_proto_rawDescOnce sync.Once
@@ -351,23 +350,23 @@ func file_proto_paxos_proto_rawDescGZIP() []byte {
 
 var file_proto_paxos_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_paxos_proto_goTypes = []any{
-	(*BallotNum)(nil),       // 0: paxoskv.BallotNum
-	(*Value)(nil),           // 1: paxoskv.Value
-	(*PaxosInstanceId)(nil), // 2: paxoskv.PaxosInstanceId
-	(*Acceptor)(nil),        // 3: paxoskv.Acceptor
-	(*Proposer)(nil),        // 4: paxoskv.Proposer
+	(*BallotNum)(nil),       // 0: paxos.BallotNum
+	(*Value)(nil),           // 1: paxos.Value
+	(*PaxosInstanceId)(nil), // 2: paxos.PaxosInstanceId
+	(*Acceptor)(nil),        // 3: paxos.Acceptor
+	(*Proposer)(nil),        // 4: paxos.Proposer
 }
 var file_proto_paxos_proto_depIdxs = []int32{
-	0, // 0: paxoskv.Acceptor.LastBal:type_name -> paxoskv.BallotNum
-	1, // 1: paxoskv.Acceptor.Val:type_name -> paxoskv.Value
-	0, // 2: paxoskv.Acceptor.VBal:type_name -> paxoskv.BallotNum
-	2, // 3: paxoskv.Proposer.Id:type_name -> paxoskv.PaxosInstanceId
-	0, // 4: paxoskv.Proposer.Bal:type_name -> paxoskv.BallotNum
-	1, // 5: paxoskv.Proposer.Val:type_name -> paxoskv.Value
-	4, // 6: paxoskv.PaxosKV.Prepare:input_type -> paxoskv.Proposer
-	4, // 7: paxoskv.PaxosKV.Accept:input_type -> paxoskv.Proposer
-	3, // 8: paxoskv.PaxosKV.Prepare:output_type -> paxoskv.Acceptor
-	3, // 9: paxoskv.PaxosKV.Accept:output_type -> paxoskv.Acceptor
+	0, // 0: paxos.Acceptor.LastBal:type_name -> paxos.BallotNum
+	1, // 1: paxos.Acceptor.Val:type_name -> paxos.Value
+	0, // 2: paxos.Acceptor.VBal:type_name -> paxos.BallotNum
+	2, // 3: paxos.Proposer.Id:type_name -> paxos.PaxosInstanceId
+	0, // 4: paxos.Proposer.Bal:type_name -> paxos.BallotNum
+	1, // 5: paxos.Proposer.Val:type_name -> paxos.Value
+	4, // 6: paxos.PaxosKV.Prepare:input_type -> paxos.Proposer
+	4, // 7: paxos.PaxosKV.Accept:input_type -> paxos.Proposer
+	3, // 8: paxos.PaxosKV.Prepare:output_type -> paxos.Acceptor
+	3, // 9: paxos.PaxosKV.Accept:output_type -> paxos.Acceptor
 	8, // [8:10] is the sub-list for method output_type
 	6, // [6:8] is the sub-list for method input_type
 	6, // [6:6] is the sub-list for extension type_name
