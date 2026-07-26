@@ -1,9 +1,9 @@
-# PaxosKV
+# Paxos
 
 [![test](https://github.com/Arissira7/Paxos/actions/workflows/test.yml/badge.svg)](https://github.com/Arissira7/Paxos/actions/workflows/test.yml)
 [![golangci-lint](https://github.com/Arissira7/Paxos/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Arissira7/Paxos/actions/workflows/golangci-lint.yml)
 
-基于 Paxos 共识算法的分布式 Key-Value 存储实现。
+基于 Paxos 共识算法的分布式系统简单实现
 
 ## 核心概念
 
