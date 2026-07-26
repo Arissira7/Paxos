@@ -11,6 +11,7 @@ import (
 	"github.com/kr/pretty"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -91,15 +92,15 @@ func (p *Proposer) Phase1(acceptorIds []int64, quorum int) (*Value, *BallotNum, 
 	replies := p.rpcToAll(acceptorIds, "Prepare")
 
 	ok := 0
-	higherBal := *p.Bal
+	higherBal := p.Bal
 	maxVoted := &Acceptor{VBal: &BallotNum{}}
 
 	for _, r := range replies {
 
 		pretty.Logf("Proposer: handling Prepare reply: %s", r)
 		if !p.Bal.GE(r.LastBal) {
-			if r.LastBal.GE(&higherBal) {
-				higherBal = *r.LastBal
+			if r.LastBal.GE(higherBal) {
+				higherBal = r.LastBal
 			}
 			continue
 		}
@@ -115,7 +116,7 @@ func (p *Proposer) Phase1(acceptorIds []int64, quorum int) (*Value, *BallotNum, 
 		}
 	}
 
-	return nil, &higherBal, NotEnoughQuorum
+	return nil, higherBal, NotEnoughQuorum
 
 }
 
@@ -127,12 +128,12 @@ func (p *Proposer) Phase2(acceptorIds []int64, quorum int) (*BallotNum, error) {
 	replies := p.rpcToAll(acceptorIds, "Accept")
 
 	ok := 0
-	higherBal := *p.Bal
+	higherBal := p.Bal
 	for _, r := range replies {
 		pretty.Logf("Proposer: handling Accept reply: %s", r)
 		if !p.Bal.GE(r.LastBal) {
-			if r.LastBal.GE(&higherBal) {
-				higherBal = *r.LastBal
+			if r.LastBal.GE(higherBal) {
+				higherBal = r.LastBal
 			}
 			continue
 		}
@@ -142,7 +143,7 @@ func (p *Proposer) Phase2(acceptorIds []int64, quorum int) (*BallotNum, error) {
 		}
 	}
 
-	return &higherBal, NotEnoughQuorum
+	return higherBal, NotEnoughQuorum
 
 }
 
@@ -155,7 +156,7 @@ func (p *Proposer) rpcToAll(acceptorIds []int64, action string) []*Acceptor {
 		var err error
 		address := fmt.Sprintf("127.0.0.1:%d", AcceptorBasePort+int64(aid))
 		// Set up a connection to the server.
-		conn, err := grpc.Dial(address, grpc.WithInsecure())
+		conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("did not connect: %v", err)
 		}
@@ -243,13 +244,13 @@ func (s *KVServer) Prepare(c context.Context, r *Proposer) (*Acceptor, error) {
 
 	v := s.getLockedVersion(r.Id)
 	defer v.mu.Unlock()
-	reply := v.acceptor
+	reply := &v.acceptor
 
 	if r.Bal.GE(v.acceptor.LastBal) {
 		v.acceptor.LastBal = r.Bal
 	}
 
-	return &reply, nil
+	return reply, nil
 }
 
 // Accept handles Accept request.
@@ -262,11 +263,9 @@ func (s *KVServer) Accept(c context.Context, r *Proposer) (*Acceptor, error) {
 	v := s.getLockedVersion(r.Id)
 	defer v.mu.Unlock()
 
-	// a := &X{}
-	// `b := &*a` does not deref the reference, b and a are the same pointer.
-	d := *v.acceptor.LastBal
-	reply := Acceptor{
-		LastBal: &d,
+	// capture current LastBal for the reply before mutating it
+	reply := &Acceptor{
+		LastBal: v.acceptor.LastBal,
 	}
 
 	// article say acceptor's LastBal equal proposer's Bal will accept it
@@ -277,7 +276,7 @@ func (s *KVServer) Accept(c context.Context, r *Proposer) (*Acceptor, error) {
 		v.acceptor.VBal = r.Bal
 	}
 
-	return &reply, nil
+	return reply, nil
 }
 
 // ServeAcceptors starts a grpc server for every acceptor.
@@ -286,6 +285,7 @@ func ServeAcceptors(acceptorIds []int64) []*grpc.Server {
 	servers := []*grpc.Server{}
 
 	for _, aid := range acceptorIds {
+		aidi := aid
 		addr := fmt.Sprintf("127.0.0.1:%d", AcceptorBasePort+int64(aid))
 
 		lis, err := net.Listen("tcp", addr)
@@ -301,7 +301,11 @@ func ServeAcceptors(acceptorIds []int64) []*grpc.Server {
 		reflection.Register(s)
 		pretty.Logf("Acceptor-%d serving on %s ...", aid, addr)
 		servers = append(servers, s)
-		go s.Serve(lis)
+		go func(s *grpc.Server, lis net.Listener) {
+			if err := s.Serve(lis); err != nil {
+				log.Printf("Acceptor-%d serve error: %v", aidi, err)
+			}
+		}(s, lis)
 	}
 
 	return servers
