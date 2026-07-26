@@ -10,11 +10,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version:
-          - "1.20"
-          - "1.21"
-          - "1.22"
-        os: [ubuntu-latest, macos-latest]
+        include:
+          # macOS runner image is incompatible with Go 1.21+ test binaries
+          # (dyld abort: missing LC_UUID load command). Race validation
+          # stays on Linux. macOS only runs vet/build/test on Go 1.20.
+          - go-version: "1.20"
+            os: macos-latest
+          - go-version: "1.20"
+            os: ubuntu-latest
+          - go-version: "1.21"
+            os: ubuntu-latest
+          - go-version: "1.22"
+            os: ubuntu-latest
 
     runs-on: ${{ matrix.os }}
 
