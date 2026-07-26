@@ -1,5 +1,8 @@
 # PaxosKV
 
+[![test](https://github.com/Arissira7/Paxos/actions/workflows/test.yml/badge.svg)](https://github.com/Arissira7/Paxos/actions/workflows/test.yml)
+[![golangci-lint](https://github.com/Arissira7/Paxos/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Arissira7/Paxos/actions/workflows/golangci-lint.yml)
+
 基于 Paxos 共识算法的分布式 Key-Value 存储实现。
 
 ## 核心概念
@@ -32,81 +35,3 @@
 1. Proposer 基于 Phase 1 结果选择值（自身值或已接受的值）
 2. 向所有 Acceptor 发送 Accept 请求
 3. 若获得多数派确认，值被安全接受
-
-## 技术栈
-
-- **Go 1.20+**
-- **gRPC**: RPC 通信框架
-- **Protocol Buffers**: 序列化格式
-
-## 使用方法
-
-### 启动 Acceptor 服务
-
-```go
-acceptorIds := []int64{0, 1, 2, 3, 4} // 5 个节点
-servers := paxoskv.ServeAcceptors(acceptorIds)
-```
-
-每个 Acceptor 在端口 `3333 + acceptorId` 上监听。
-
-### 运行 Paxos 提议
-
-```go
-proposer := &paxoskv.Proposer{
-    Id: &paxoskv.PaxosInstanceId{
-        Key: "my-key",
-        Ver: 1,
-    },
-    Bal: &paxoskv.BallotNum{
-        N: 0,
-        ProposerId: 1,
-    },
-}
-
-value := &paxoskv.Value{Vi64: 42}
-acceptedValue := proposer.RunPaxos(acceptorIds, value)
-```
-
-### 读取值（无需提议）
-
-```go
-proposer := &paxoskv.Proposer{
-    Id: &paxoskv.PaxosInstanceId{
-        Key: "my-key",
-        Ver: 1,
-    },
-    Bal: &paxoskv.BallotNum{N: 0, ProposerId: 1},
-}
-
-// 传入 nil 作为值，执行只读操作
-readValue := proposer.RunPaxos(acceptorIds, nil)
-```
-
-## 关键实现细节
-
-### Ballot Number 比较
-
-```go
-func (a *BallotNum) GE(b *BallotNum) bool {
-    if a.N > b.N {
-        return true
-    }
-    if a.N < b.N {
-        return false
-    }
-    return a.ProposerId >= b.ProposerId
-}
-```
-
-Ballot number 的比较确保了全局唯一性和有序性。
-
-### 并发安全
-
-- `KVServer` 使用 `sync.Mutex` 保护存储
-- `Version` 使用独立的 mutex 保护每个版本的状态
-
-## 运行要求
-
-- Go 1.20 或更高版本
-- Protocol Buffer 编译器 (用于重新生成 .pb.go 文件)
