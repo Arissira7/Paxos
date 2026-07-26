@@ -286,11 +286,12 @@ func ServeAcceptors(acceptorIds []int64) []*grpc.Server {
 	servers := []*grpc.Server{}
 
 	for _, aid := range acceptorIds {
-		addr := fmt.Sprintf(":%d", AcceptorBasePort+int64(aid))
+		addr := fmt.Sprintf("127.0.0.1:%d", AcceptorBasePort+int64(aid))
 
 		lis, err := net.Listen("tcp", addr)
 		if err != nil {
-			log.Fatalf("listen: %s %v", addr, err)
+			log.Printf("listen: %s %v", addr, err)
+			continue
 		}
 
 		s := grpc.NewServer()
